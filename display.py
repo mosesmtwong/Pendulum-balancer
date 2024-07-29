@@ -5,8 +5,8 @@ import engine
 def main():
     pygame.init()
 
-    window_width = 800
-    window_height = 600
+    window_width = 1500
+    window_height = 1000
     center_x = window_width // 2
     center_y = window_height // 2
     scale = 150
@@ -21,6 +21,13 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    system.u = -400
+                if event.key == pygame.K_RIGHT:
+                    system.u = 400
+            else:
+                system.u = 0
         window.fill((0, 0, 0))
 
         system.update()

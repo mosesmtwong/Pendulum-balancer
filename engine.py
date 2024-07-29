@@ -8,7 +8,7 @@ class DIPC:
         self,
         g=10,
         u=0,
-        m0=20,
+        m0=10,
         m1=5,
         m2=5,
         L1=1,
@@ -16,16 +16,18 @@ class DIPC:
         h=0.5,
         w=1,
         theta0=0,
-        theta1=0.001,
-        theta2=0,
+        theta1=0.1,
+        theta2=0.1,
         w0=0,
         w1=0,
         w2=0,
-        dt=0.001,
+        dt=0.002,
+        f1=0.01,
+        f2=0.01,
     ):
         self.dt = dt
         self.h, self.w = (h, w)
-        self.g, self.u = (g, u)
+        self.g, self.u, self.f1, self.f2 = (g, u, f1, f2)
         self.half = 0.5
         self.m0, self.m1, self.m2 = (m0, m1, m2)
         self.L1, self.L2 = (L1, L2)
@@ -36,9 +38,16 @@ class DIPC:
         self.a0, self.a1, self.a2 = ("a0", "a1", "a2")
 
     def update(self):
+        # bounds
+        if self.theta0 > 4:
+            self.theta0 = 4
+            self.w0 = 0
+        if self.theta0 < -4:
+            self.theta0 = -4
+            self.w0 = 0
 
+        # numpy solve for accelerations
         m1l1m2L1 = self.m1 * self.l1 + self.m2 * self.L1
-        # [[a0, a1, a2], [a0, a1, a2], [a0, a1, a2]]
         coefficient = [
             [
                 self.m0 + self.m1 + self.m2,
@@ -69,9 +78,14 @@ class DIPC:
 
         self.sols = np.linalg.solve(coefficient, const)
 
+        # update velocities and angles
         self.w0 += self.sols[0] * self.dt
         self.w1 += self.sols[1] * self.dt
         self.w2 += self.sols[2] * self.dt
+
+        self.w0 *= 1 - self.f1
+        self.w1 *= 1 - self.f2
+        self.w2 *= 1 - self.f2
 
         self.theta0 += self.w0 * self.dt
         self.theta1 += self.w1 * self.dt
